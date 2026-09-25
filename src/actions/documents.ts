@@ -104,7 +104,7 @@ export async function uploadDocument(_prev: ActionState, formData: FormData): Pr
     return { error: `Não consegui ler o PDF: ${message}` };
   }
 
-  const { chunks, truncated } = chunkText(rawText);
+  const chunks = chunkText(rawText);
   if (chunks.length === 0) {
     return {
       error: "Não encontrei texto neste arquivo. PDFs feitos só de imagem precisam de OCR.",
@@ -114,9 +114,6 @@ export async function uploadDocument(_prev: ActionState, formData: FormData): Pr
   let embeddings: number[][];
   try {
     embeddings = await embedTexts(chunks, "RETRIEVAL_DOCUMENT");
-    if (embeddings.length !== chunks.length) {
-      return { error: "O Gemini devolveu menos embeddings do que os trechos do arquivo." };
-    }
   } catch (error) {
     const message = error instanceof Error ? error.message : "falha ao gerar embeddings";
     return { error: `Análise interrompida: ${message}` };
@@ -136,23 +133,25 @@ export async function uploadDocument(_prev: ActionState, formData: FormData): Pr
   });
   if (insertError) return { error: `Metadados: ${insertError.message}` };
 
-  const { error: chunkError } = await supabase.from("document_chunks").insert(
-    chunks.map((content, index) => ({
-      document_id: documentId,
-      org_id: org.orgId,
-      content,
-      embedding: `[${embeddings[index]?.join(",") ?? ""}]`,
-    })),
-  );
-  if (chunkError) {
-    await supabase.from("documents").delete().eq("id", documentId).eq("org_id", org.orgId);
-    return { error: `Trechos não foram salvos: ${chunkError.message}` };
+  for (let start = 0; start < chunks.length; start += 30) {
+    const slice = chunks.slice(start, start + 30);
+    const { error: chunkError } = await supabase.from("document_chunks").insert(
+      slice.map((content, index) => ({
+        document_id: documentId,
+        org_id: org.orgId,
+        content,
+        embedding: `[${embeddings[start + index]?.join(",") ?? ""}]`,
+      })),
+    );
+    if (chunkError) {
+      await supabase.from("documents").delete().eq("id", documentId).eq("org_id", org.orgId);
+      return { error: `Trechos não foram salvos: ${chunkError.message}` };
+    }
   }
 
   revalidatePath("/dashboard/documents");
-  const limitNote = truncated ? " O arquivo passou do limite de 40 trechos; o restante não entrou no acervo." : "";
   const trechos = chunks.length === 1 ? "1 trecho" : `${chunks.length} trechos`;
-  return { ok: `${file.name} analisado em ${trechos}.${limitNote}` };
+  return { ok: `${file.name} analisado em ${trechos}.` };
 }
 
 export async function deleteDocument(formData: FormData) {

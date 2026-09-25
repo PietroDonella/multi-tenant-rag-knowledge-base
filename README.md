@@ -65,5 +65,4 @@ Arquivos ficam no bucket `documents`, no caminho `{org_id}/{document_id}/{arquiv
 ## Limites desta versão
 
 - PDF só de imagem não tem texto extraível.
-- A indexação guarda até 40 trechos por arquivo.
 - Um participante só entra se já tiver conta com aquele e-mail.

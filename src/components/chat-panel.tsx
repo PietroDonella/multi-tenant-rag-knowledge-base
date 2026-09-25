@@ -2,6 +2,7 @@
 
 import { useChat } from "@ai-sdk/react";
 import { useState } from "react";
+import ReactMarkdown from "react-markdown";
 
 export function ChatPanel({ orgName }: { orgName: string | null }) {
   const [input, setInput] = useState("");
@@ -36,7 +37,15 @@ export function ChatPanel({ orgName }: { orgName: string | null }) {
               <p className="mb-1 text-xs tracking-wide uppercase opacity-70">
                 {message.role === "user" ? "Você" : "Assistente"}
               </p>
-              {text ? <p className="whitespace-pre-wrap">{text}</p> : null}
+              {text ? (
+                message.role === "assistant" ? (
+                  <div className="chat-markdown">
+                    <ReactMarkdown>{text}</ReactMarkdown>
+                  </div>
+                ) : (
+                  <p className="whitespace-pre-wrap">{text}</p>
+                )
+              ) : null}
               {showCaret ? <span className="typing-caret ml-0.5 inline-block">▍</span> : null}
               {busy && isLast && message.role === "assistant" && text.length === 0 ? <TypingDots /> : null}
             </article>

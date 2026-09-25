@@ -3,6 +3,8 @@ import { DocumentUploader } from "@/components/document-uploader";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentOrg } from "@/lib/tenant";
 
+export const maxDuration = 300;
+
 export default async function DocumentsPage() {
   const org = await getCurrentOrg();
   const supabase = await createClient();
@@ -18,9 +20,6 @@ export default async function DocumentsPage() {
   return (
     <main className="mx-auto max-w-3xl px-8 py-10">
       <h1 className="text-3xl font-semibold tracking-tight">Documentos</h1>
-      <p className="mt-2 text-sm text-stone-600">
-        {org ? `Acervo de ${org.name}.` : "Crie uma organização na visão geral para enviar arquivos."}
-      </p>
       <div className="mt-6">
         <DocumentUploader />
       </div>

@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { updateProfile } from "@/actions/profile";
+import { ImagePicker } from "@/components/image-picker";
 import type { ActionState } from "@/actions/documents";
 
 const initial: ActionState = {};
@@ -26,11 +27,7 @@ export function ProfileEditor({
           className="mt-1 w-full rounded-lg border border-[var(--line)] bg-white px-3 py-2"
         />
       </label>
-      <label className="block text-sm font-medium">
-        Foto
-        <input name="avatar" type="file" accept="image/*" className="mt-1 block w-full text-sm" />
-      </label>
-      {avatarUrl ? <img src={avatarUrl} alt="" className="h-16 w-16 rounded-full object-cover" /> : null}
+      <ImagePicker name="avatar" label="Foto" shape="circle" initialUrl={avatarUrl} />
       {state.error ? <p className="text-sm text-[var(--warn)]">{state.error}</p> : null}
       {state.ok ? <p className="text-sm text-[var(--accent)]">{state.ok}</p> : null}
       <button

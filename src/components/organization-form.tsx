@@ -1,7 +1,8 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState } from "react";
 import { createOrganizationProfile, updateOrganizationProfile } from "@/actions/organizations";
+import { ImagePicker } from "@/components/image-picker";
 import type { ActionState } from "@/actions/documents";
 
 const initial: ActionState = {};
@@ -22,8 +23,6 @@ export function OrganizationForm({
 }) {
   const action = mode === "create" ? createOrganizationProfile : updateOrganizationProfile;
   const [state, formAction, pending] = useActionState(action, initial);
-  const [avatarPreview, setAvatarPreview] = useState(org?.avatarUrl ?? "");
-  const [bannerPreview, setBannerPreview] = useState(org?.bannerUrl ?? "");
 
   return (
     <form action={formAction} className="space-y-4 rounded-2xl border border-[var(--line)] bg-[var(--panel)] p-6">
@@ -54,8 +53,8 @@ export function OrganizationForm({
           className="mt-1 w-full rounded-lg border border-[var(--line)] bg-white px-3 py-2"
         />
       </label>
-      <ImageField label="Foto" name="avatar" preview={avatarPreview} onPreview={setAvatarPreview} />
-      <ImageField label="Banner" name="banner" preview={bannerPreview} onPreview={setBannerPreview} />
+      <ImagePicker name="avatar" label="Foto" shape="circle" initialUrl={org?.avatarUrl} />
+      <ImagePicker name="banner" label="Banner" shape="banner" initialUrl={org?.bannerUrl} />
       {state.error ? <p className="text-sm text-[var(--warn)]">{state.error}</p> : null}
       <button
         type="submit"
@@ -65,36 +64,5 @@ export function OrganizationForm({
         {pending ? "Salvando…" : mode === "create" ? "Criar organização" : "Salvar alterações"}
       </button>
     </form>
-  );
-}
-
-function ImageField({
-  label,
-  name,
-  preview,
-  onPreview,
-}: {
-  label: string;
-  name: string;
-  preview: string;
-  onPreview: (value: string) => void;
-}) {
-  return (
-    <label className="block text-sm font-medium">
-      {label}
-      <input
-        name={name}
-        type="file"
-        accept="image/*"
-        className="mt-1 block w-full text-sm"
-        onChange={(event) => {
-          const file = event.target.files?.[0];
-          onPreview(file ? URL.createObjectURL(file) : "");
-        }}
-      />
-      {preview ? (
-        <img src={preview} alt="" className="mt-2 h-24 w-full rounded-lg object-cover" />
-      ) : null}
-    </label>
   );
 }

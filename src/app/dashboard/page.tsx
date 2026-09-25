@@ -50,8 +50,38 @@ export default async function DashboardPage() {
   const initial = organization?.name.slice(0, 1).toUpperCase() ?? "O";
 
   return (
-    <div className="grid min-h-screen grid-cols-1 lg:grid-cols-[280px_minmax(0,1fr)]">
-      <aside className="border-b border-[var(--line)] bg-[var(--panel)] px-5 py-8 lg:border-r lg:border-b-0">
+    <div className="grid min-h-screen grid-cols-1 lg:grid-cols-[minmax(0,1fr)_280px]">
+      <main className="px-6 py-8 lg:px-10">
+        <article className="overflow-hidden rounded-3xl border border-[var(--line)] bg-[var(--panel)]">
+          <div
+            className="h-44 bg-[var(--accent-ink)] bg-cover bg-center"
+            style={organization?.banner_url ? { backgroundImage: `url(${organization.banner_url})` } : undefined}
+          />
+          <div className="flex items-start justify-between gap-6 px-8 pt-16">
+            <div>
+              <h1 className="text-3xl font-semibold tracking-tight">{organization?.name ?? org.name}</h1>
+              {organization?.location ? (
+                <p className="mt-1 text-sm text-stone-500/80">{organization.location}</p>
+              ) : null}
+            </div>
+            {organization?.avatar_url ? (
+              <img
+                src={organization.avatar_url}
+                alt=""
+                className="-mt-28 h-28 w-28 rounded-full border-4 border-[var(--panel)] object-cover"
+              />
+            ) : (
+              <span className="-mt-28 flex h-28 w-28 items-center justify-center rounded-full border-4 border-[var(--panel)] bg-[var(--accent)] text-3xl text-white">
+                {initial}
+              </span>
+            )}
+          </div>
+          <p className="px-8 py-8 text-center text-stone-700">
+            {organization?.description || "Esta organização ainda não tem descrição."}
+          </p>
+        </article>
+      </main>
+      <aside className="border-t border-[var(--line)] bg-[var(--panel)] px-5 py-8 lg:border-t-0 lg:border-l">
         <h2 className="text-sm font-semibold tracking-wide text-stone-500 uppercase">Participantes</h2>
         {members.length === 0 && isOwner ? (
           <div className="mt-4">
@@ -84,36 +114,6 @@ export default async function DashboardPage() {
           </div>
         ) : null}
       </aside>
-      <main className="px-6 py-8 lg:px-10">
-        <article className="overflow-hidden rounded-3xl border border-[var(--line)] bg-[var(--panel)]">
-          <div
-            className="h-44 bg-[var(--accent-ink)] bg-cover bg-center"
-            style={organization?.banner_url ? { backgroundImage: `url(${organization.banner_url})` } : undefined}
-          />
-          <div className="flex items-end justify-between gap-6 px-8">
-            <div className="pb-2">
-              <h1 className="text-3xl font-semibold tracking-tight">{organization?.name ?? org.name}</h1>
-              {organization?.location ? (
-                <p className="mt-1 text-sm text-stone-500/80">{organization.location}</p>
-              ) : null}
-            </div>
-            {organization?.avatar_url ? (
-              <img
-                src={organization.avatar_url}
-                alt=""
-                className="-mt-14 h-28 w-28 rounded-full border-4 border-[var(--panel)] object-cover"
-              />
-            ) : (
-              <span className="-mt-14 flex h-28 w-28 items-center justify-center rounded-full border-4 border-[var(--panel)] bg-[var(--accent)] text-3xl text-white">
-                {initial}
-              </span>
-            )}
-          </div>
-          <p className="px-8 py-8 text-center text-stone-700">
-            {organization?.description || "Esta organização ainda não tem descrição."}
-          </p>
-        </article>
-      </main>
     </div>
   );
 }

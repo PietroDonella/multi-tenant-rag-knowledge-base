@@ -22,24 +22,36 @@ export async function embedTexts(values: string[], task: EmbedTask): Promise<num
   const { embedMany } = await import("ai");
   const { createGoogleGenerativeAI } = await import("@ai-sdk/google");
   const google = createGoogleGenerativeAI({ apiKey });
-  const { embeddings } = await embedMany({
-    model: google.embedding(EMBEDDING_MODEL),
-    values,
-    maxParallelCalls: 3,
-    providerOptions: {
-      google: {
-        outputDimensionality: EMBEDDING_DIMENSIONS,
-        taskType: task,
-      },
-    },
-  });
+  const batchSize = 16;
+  const vectors: number[][] = [];
 
-  return embeddings.map((embedding) => {
-    if (embedding.length !== EMBEDDING_DIMENSIONS) {
-      throw new Error(`Embedding inesperado: ${embedding.length} dimensões.`);
+  for (let start = 0; start < values.length; start += batchSize) {
+    const batch = values.slice(start, start + batchSize);
+    const { embeddings } = await embedMany({
+      model: google.embedding(EMBEDDING_MODEL),
+      values: batch,
+      maxParallelCalls: 2,
+      providerOptions: {
+        google: {
+          outputDimensionality: EMBEDDING_DIMENSIONS,
+          taskType: task,
+        },
+      },
+    });
+
+    if (embeddings.length !== batch.length) {
+      throw new Error("O Gemini devolveu menos embeddings do que os trechos enviados.");
     }
-    return normalize(embedding);
-  });
+
+    for (const embedding of embeddings) {
+      if (embedding.length !== EMBEDDING_DIMENSIONS) {
+        throw new Error(`Embedding inesperado: ${embedding.length} dimensões.`);
+      }
+      vectors.push(normalize(embedding));
+    }
+  }
+
+  return vectors;
 }
 
 export async function embedText(value: string, task: EmbedTask): Promise<number[]> {
